@@ -21,10 +21,10 @@ public class MyJobDaemonService extends JobService {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Log.i("xhw", "jobService启动");
+        Log.i("xhw", "onStartCommand jobService启动");
 
         enToast("jobService启动");
-        scheduleJob(getJobInfo());
+//        scheduleJob(getJobInfo());
         return START_NOT_STICKY;
     }
 
@@ -33,24 +33,20 @@ public class MyJobDaemonService extends JobService {
         Log.i("xhw", "执行了onStartJob方法");
 
         enToast("jobService启动");
-
+        scheduleJob(getJobInfo());
         boolean isLocalServiceWork = isServiceWork(this, "com.lingdian.jobservicedemo");
-        boolean isRemoteServiceWork = isServiceWork(this, "com.marswin89.marsdaemon.demo.Service2");
-        if(!isLocalServiceWork||
-                !isRemoteServiceWork){
+        if(!isLocalServiceWork){
             this.startService(new Intent(this,CommonService.class));
-//            this.startService(new Intent(this,Service2.class));
-//            Toast.makeText(this, "进程启动", Toast.LENGTH_SHORT).show();
             Log.i("onStartJob", "CommonService");
         }
-        return true;
+        return false;
     }
 
     @Override
     public boolean onStopJob(JobParameters params) {
         Log.i("xhw", "执行了onStopJob方法");
         scheduleJob(getJobInfo());
-        return true;
+        return false;
     }
 
     //将任务作业发送到作业调度中去
@@ -62,14 +58,24 @@ public class MyJobDaemonService extends JobService {
     }
 
     public JobInfo getJobInfo(){
-        JobInfo.Builder builder = new JobInfo.Builder(kJobId++, new ComponentName(this, MyJobDaemonService.class));
-        builder.setRequiredNetworkType(JobInfo.NETWORK_TYPE_NONE);
-        builder.setPersisted(true);
-        builder.setRequiresCharging(false);
-        builder.setRequiresDeviceIdle(false);
-        //间隔1000毫秒
-        builder.setPeriodic(1000);
-        return builder.build();
+//        JobInfo.Builder builder = new JobInfo.Builder(kJobId++, new ComponentName(this, MyJobDaemonService.class));
+//        builder.setRequiredNetworkType(JobInfo.NETWORK_TYPE_NONE);
+//        builder.setPersisted(true);
+//        builder.setRequiresCharging(false);
+//        builder.setRequiresDeviceIdle(false);
+//        //间隔1000毫秒
+//        builder.setPeriodic(1000);
+//        return builder.build();
+
+        JobInfo jobInfo = new JobInfo.Builder(1, new ComponentName(getPackageName(), MyJobDaemonService.class.getName()))
+                .setMinimumLatency(10000L)
+                .setOverrideDeadline(10000L)
+                .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
+                .setRequiresCharging(true)
+                .setRequiresDeviceIdle(true)
+                .setPersisted(true)
+                .build();
+       return jobInfo;
     }
 
     // 判断服务是否正在运行
